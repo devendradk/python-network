@@ -1,0 +1,11 @@
+[all:vars]
+ansible_connection=ssh 
+ansible_ssh_user=devendra
+ansible_ssh_pass=Juniper
+ansible_sudo_pass=Juniper
+
+[junos]
+172.22.146.92
+
+[test3]
+test-1 ansible_ssh_host=10.255.254.81

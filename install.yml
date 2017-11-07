@@ -1,0 +1,30 @@
+---
+
+- hosts: junos
+  become: true 
+  
+  tasks:
+
+     - name: 
+       lineinfile:
+        dest: /home/devendra/PKI/JTAC/openssl.cnf
+        regexp: 'subjectAltName=IP:[1-9].*'
+        line: 'subjectAltName=IP:{{ router }}'
+
+     - name: Generate encrypted Key
+       command: openssl genrsa -des3 -passout pass:Juniper -out {{ router }}.pass.key 4096 chdir=/home/devendra/PKI/JTAC/
+
+     - name: Decode Key
+       command: openssl rsa -passin pass:Juniper -in {{ router }}.pass.key -out {{ router }}.key chdir=/home/devendra/PKI/JTAC/
+       
+     - name: Generate Certificate request
+       command: openssl req -new -key {{ router }}.key -out {{ router }}.csr -subj "/C=US/ST=CA/L=Sunnyvale/O=CSIM/OU=CSIM/CN={{ router }}" chdir=/home/devendra/PKI/JTAC/
+       
+     - name: Generate Ceritificate.
+       command: openssl ca -passin pass:Juniper -batch -config openssl.cnf -policy policy_anything -out certs/{{ router }}.crt -infiles {{ router }}.csr chdir=/home/devendra/PKI/JTAC/
+       
+     - name: Copy Cert file to local directory
+       fetch: src=/home/devendra/PKI/JTAC/certs/{{ router }}.crt dest={{ router }}.crt flat=yes
+       
+     - name: Copy Key file to local directory
+       fetch: src=/home/devendra/PKI/JTAC/{{ router }}.key dest={{ router }}.key flat=yes
